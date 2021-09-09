@@ -292,7 +292,16 @@ img.user-detail {
 #footer_account {
     position:absolute;
     bottom:0;
+    z-index: -2;
     /* width:100%; */
       /* Height of the footer */
     /* background:#6cf; */
  }
+.footer_account_image {
+    z-index: -1;
+}
+
+ 
+a[href], input[type='submit'], input[type='image'], label[for], select, button, .pointer {
+    cursor: pointer;
+}
