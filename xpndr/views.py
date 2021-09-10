@@ -1,93 +1,105 @@
-from django.shortcuts import render, get_object_or_404,redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
-from .models import Comment,Transponder,Satellite
-from .forms import  CommentForm
+from .models import Comment, Transponder, Satellite
+from .forms import CommentForm
 from .filters import CommentFilter
 
-#TODO PDF generate nginx gunnicorn 
+# TODO PDF generate nginx gunnicorn
 # active filter Truefalse....activeresolver   search button enable with text .....edit existing form......delete in edit button.....
 # portal details.html footerflex
 
+
 @login_required
 def new_comment(request):
-    form=CommentForm()
+    form = CommentForm()
     if request.method == 'POST':
-        form = CommentForm(request.POST,request.FILES)
+        form = CommentForm(request.POST, request.FILES)
         if form.is_valid():
-            form=form.save(commit=False)
+            form = form.save(commit=False)
             # automatically set the user as logged in user .....when a form is created
-            form.user=request.user
+            form.user = request.user
             print(form.user)
             form.save()
-            return comment_list(request) #return to comment_list all comments page
+            # return to comment_list all comments page
+            return comment_list(request)
         else:
             print("ERROR FORM INVALID")
     else:
-        form = CommentForm(initial={'user':request.user})  # new form to the user
-    return render(request,'xpndr/post/form.html',{'form':form}) 
+        # new form to the user
+        form = CommentForm(initial={'user': request.user})
+    return render(request, 'xpndr/post/form.html', {'form': form})
+
 
 @login_required
-def update_post(request,pk):
-    comment=Comment.objects.get(id=pk)
-    form=CommentForm(instance=comment)
+def update_post(request, pk):
+    comment = Comment.objects.get(id=pk)
+    form = CommentForm(instance=comment)
     if request.method == 'POST':
         print("POST method")
-        form = CommentForm(request.POST,request.FILES,instance=comment)
+        form = CommentForm(request.POST, request.FILES, instance=comment)
         # form = CommentForm(data=request.POST)
         if form.is_valid():
             # Save the comment to the database
             form.save(commit=True)
-            return comment_list(request) #return to comment_list all comments page
+            # return to comment_list all comments page
+            return comment_list(request)
         else:
             print("ERROR FORM INVALID")
     else:
         print("get method")
         form = CommentForm(instance=comment)  # new form to the user
-    return render(request,'xpndr/post/update_post.html',{'form':form})   
+    return render(request, 'xpndr/post/update_post.html', {'form': form})
 
 # all posts list with search filter
+
+
 @login_required
 def comment_list(request):
-    comment = Comment.objects.all()
-    myFilter=CommentFilter(request.GET,queryset=comment)
-    comment=myFilter.qs
-    return render(request,'xpndr/post/list.html',{'comment': comment,'myFilter':myFilter,'heading':'All Complaints'})
+    comment = Comment.objects.all().filter(user=request.user)
+    myFilter = CommentFilter(request.GET, queryset=comment)
+    comment = myFilter.qs
+    return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'All Complaints'})
 
 # all active posts list with search filter
+
+
 @login_required
 def comment_active(request):
     comment = Comment.objects.all().filter(active=True)
-    myFilter=CommentFilter(request.GET,queryset=comment)
-    comment=myFilter.qs
-    return render(request,'xpndr/post/list.html',{'comment': comment,'myFilter':myFilter,'heading':'Active'})
+    myFilter = CommentFilter(request.GET, queryset=comment)
+    comment = myFilter.qs
+    return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'Active'})
 
-# all active posts list with search filter
+# all inactive posts list with search filter
+
+
 @login_required
 def comment_inactive(request):
     comment = Comment.objects.all().filter(active=False)
-    myFilter=CommentFilter(request.GET,queryset=comment)
-    comment=myFilter.qs
-    return render(request,'xpndr/post/list.html',{'comment': comment,'myFilter':myFilter,'heading':'Inactive'})
+    myFilter = CommentFilter(request.GET, queryset=comment)
+    comment = myFilter.qs
+    return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'Inactive'})
 
 
-#full detail of comment post
+# full detail of comment post
 @login_required
-def comment_detail(request,pk):
-    comment = get_object_or_404(Comment,id=pk)                           
-    return render(request,'xpndr/post/detail.html',{'comment': comment})
+def comment_detail(request, pk):
+    comment = get_object_or_404(Comment, id=pk)
+    return render(request, 'xpndr/post/detail.html', {'comment': comment})
 
 
 @login_required
-def comment_delete(request,pk):
-    if request.method == 'POST':    
-        comment=Comment.objects.get(pk=pk)
+def comment_delete(request, pk):
+    if request.method == 'POST':
+        comment = Comment.objects.get(pk=pk)
         comment.delete()
         # return render(request,'xpndr/post/list.html')
     return redirect('xpndr:comment_list',)
 
-#search based on satellite select
+
+# search based on satellite select
 """ @login_required
 def sat_detail(request):
     form=SatDetailForm(   )
@@ -127,14 +139,11 @@ def sat_detail(request):
     #     return HttpResponseRedirect("error sat_detail view")
         # return HttpResponseRedirect(reverse('polls:results', args=(question.id,))) """
 
-
-    #     def delete_book(request, pk):
-    # if request.method == 'POST':
-    #     book = Book.objects.get(pk=pk)
-    #     book.delete()
-    # return redirect('book_list')
-
-
+#     def delete_book(request, pk):
+# if request.method == 'POST':
+#     book = Book.objects.get(pk=pk)
+#     book.delete()
+# return redirect('book_list')
 
 
 # class PostListView(ListView):
