@@ -57,7 +57,10 @@ def update_post(request, pk):
 
 @login_required
 def comment_list(request):
-    comment = Comment.objects.all().filter(user=request.user)
+    if request.user.is_superuser:
+        comment = Comment.objects.all()
+    else:
+        comment = Comment.objects.all().filter(user=request.user)
     myFilter = CommentFilter(request.GET, queryset=comment)
     comment = myFilter.qs
     return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'All Complaints'})
@@ -67,7 +70,10 @@ def comment_list(request):
 
 @login_required
 def comment_active(request):
-    comment = Comment.objects.all().filter(active=True)
+    if request.user.is_superuser:
+        comment = Comment.objects.all().filter(active=True)
+    else:
+        comment = Comment.objects.all().filter(user=request.user).filter(active=True)
     myFilter = CommentFilter(request.GET, queryset=comment)
     comment = myFilter.qs
     return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'Active'})
@@ -77,7 +83,10 @@ def comment_active(request):
 
 @login_required
 def comment_inactive(request):
-    comment = Comment.objects.all().filter(active=False)
+    if request.user.is_superuser:
+        comment = Comment.objects.all().filter(active=False)
+    else:
+        comment = Comment.objects.all().filter(user=request.user).filter(active=False)
     myFilter = CommentFilter(request.GET, queryset=comment)
     comment = myFilter.qs
     return render(request, 'xpndr/post/list.html', {'comment': comment, 'myFilter': myFilter, 'heading': 'Inactive'})
