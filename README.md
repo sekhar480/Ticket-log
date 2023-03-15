@@ -1,2 +1,1 @@
-# satellite-transponder-log
-ISRO satellites transponder log
+Ticket logging for the company
